@@ -114,15 +114,24 @@ class AIAnalyst:
             f"Respond with JSON only."
         )
 
-        message = self.client.messages.create(
-            model=self.settings.analysis_model,
-            max_tokens=self.settings.max_tokens,
-            system=ANALYSIS_SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": user_prompt}],
-        )
+        try:
+            message = self.client.messages.create(
+                model=self.settings.analysis_model,
+                max_tokens=self.settings.max_tokens,
+                system=ANALYSIS_SYSTEM_PROMPT,
+                messages=[{"role": "user", "content": user_prompt}],
+            )
+        except anthropic.AuthenticationError:
+            raise SystemExit(
+                "Error: Invalid ANTHROPIC_API_KEY. Check your .env file or environment variable."
+            )
 
         raw_text = message.content[0].text
-        parsed = json.loads(raw_text)
+
+        try:
+            parsed = json.loads(raw_text)
+        except json.JSONDecodeError:
+            raise SystemExit(f"Error: Could not parse AI response as JSON:\n{raw_text[:500]}")
 
         return AnalysisReport(
             market_summary=parsed.get("market_summary", ""),
