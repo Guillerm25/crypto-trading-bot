@@ -127,6 +127,11 @@ class AIAnalyst:
             raise SystemExit(
                 "Error: Invalid OPENAI_API_KEY. Check your .env file or environment variable."
             )
+        except openai.RateLimitError as e:
+            raise SystemExit(
+                f"Error: OpenAI API quota exceeded. Check your plan and billing at "
+                f"https://platform.openai.com/settings/organization/billing\n{e}"
+            )
 
         raw_text = response.choices[0].message.content or ""
 
