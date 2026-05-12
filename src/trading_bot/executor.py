@@ -104,14 +104,16 @@ class TradeExecutor:
             return None
 
         position = portfolio.positions[symbol]
+        sell_amount = position.amount
+        sell_entry = position.entry_price
         ticker = self.market_data.fetch_ticker(symbol)
         price = ticker.current_price
 
-        order = self.paper_trader.execute_order(symbol, OrderSide.SELL, position.amount, price)
-        pnl = (price - position.entry_price) * position.amount
+        order = self.paper_trader.execute_order(symbol, OrderSide.SELL, sell_amount, price)
+        pnl = (price - sell_entry) * sell_amount
         color = "green" if pnl >= 0 else "red"
         console.print(
-            f"  [{color}]SELL {symbol}: {position.amount:.6f} @ ${price:,.2f} "
+            f"  [{color}]SELL {symbol}: {sell_amount:.6f} @ ${price:,.2f} "
             f"(PnL: ${pnl:,.2f})[/{color}]"
         )
         return order
