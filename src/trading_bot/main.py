@@ -69,8 +69,8 @@ def analyze(symbols: str | None) -> None:
     """Run AI analysis on market data and display recommendations."""
     settings = load_settings()
 
-    if not settings.anthropic_api_key:
-        console.print("[bold red]Error: ANTHROPIC_API_KEY not set. Add it to .env[/bold red]")
+    if not settings.openai_api_key:
+        console.print("[bold red]Error: OPENAI_API_KEY not set. Add it to .env[/bold red]")
         raise SystemExit(1)
 
     fetcher = MarketDataFetcher(settings)
@@ -86,7 +86,7 @@ def analyze(symbols: str | None) -> None:
 
     display_market_data(market_data_list)
 
-    console.print("[bold]Running AI analysis with Claude...[/bold]\n")
+    console.print("[bold]Running AI analysis with ChatGPT...[/bold]\n")
     report = analyst.analyze(market_data_list)
     display_analysis_report(report)
 
@@ -98,8 +98,8 @@ def trade(symbols: str | None, auto_execute: bool) -> None:
     """Run full trading cycle: fetch data, analyze, and optionally execute."""
     settings = load_settings()
 
-    if not settings.anthropic_api_key:
-        console.print("[bold red]Error: ANTHROPIC_API_KEY not set. Add it to .env[/bold red]")
+    if not settings.openai_api_key:
+        console.print("[bold red]Error: OPENAI_API_KEY not set. Add it to .env[/bold red]")
         raise SystemExit(1)
 
     fetcher = MarketDataFetcher(settings)
@@ -124,7 +124,7 @@ def trade(symbols: str | None, auto_execute: bool) -> None:
     display_market_data(market_data_list)
 
     # Step 2: AI Analysis
-    console.print("[bold]Step 2: Running AI analysis with Claude...[/bold]\n")
+    console.print("[bold]Step 2: Running AI analysis with ChatGPT...[/bold]\n")
     report = analyst.analyze(market_data_list)
     display_analysis_report(report)
 
@@ -152,8 +152,8 @@ def run(symbols: str | None, interval: int) -> None:
     """Run the trading bot continuously."""
     settings = load_settings()
 
-    if not settings.anthropic_api_key:
-        console.print("[bold red]Error: ANTHROPIC_API_KEY not set. Add it to .env[/bold red]")
+    if not settings.openai_api_key:
+        console.print("[bold red]Error: OPENAI_API_KEY not set. Add it to .env[/bold red]")
         raise SystemExit(1)
 
     fetcher = MarketDataFetcher(settings)
@@ -184,7 +184,7 @@ def run(symbols: str | None, interval: int) -> None:
             display_market_data(market_data_list)
 
             # Analyze
-            console.print("[bold]Analyzing with Claude...[/bold]\n")
+            console.print("[bold]Analyzing with ChatGPT...[/bold]\n")
             report = analyst.analyze(market_data_list)
             display_analysis_report(report)
 

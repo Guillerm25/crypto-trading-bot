@@ -1,10 +1,10 @@
 # Crypto Trading Bot
 
-Bot de trading automatizado de criptomonedas con análisis impulsado por IA (Claude de Anthropic) e integración con Coinbase.
+Bot de trading automatizado de criptomonedas con análisis impulsado por IA (ChatGPT de OpenAI) e integración con Coinbase.
 
 ## Características
 
-- **Análisis con IA**: Utiliza Claude (Anthropic) para analizar datos de mercado y generar recomendaciones de trading
+- **Análisis con IA**: Utiliza ChatGPT (OpenAI) para analizar datos de mercado y generar recomendaciones de trading
 - **Paper Trading**: Motor de simulación completo para probar estrategias sin riesgo
 - **Datos de mercado**: Obtiene precios en tiempo real, velas OHLCV y volúmenes desde Coinbase
 - **Ejecución automática**: Ejecuta operaciones basadas en las recomendaciones de la IA
@@ -15,7 +15,7 @@ Bot de trading automatizado de criptomonedas con análisis impulsado por IA (Cla
 ## Requisitos
 
 - Python >= 3.11
-- Clave API de Anthropic (para análisis con IA)
+- Clave API de OpenAI (para análisis con IA)
 - Credenciales API de Coinbase (para trading en vivo, opcional para paper trading)
 
 ## Instalación
@@ -39,7 +39,7 @@ Edita el archivo `.env` con tus credenciales:
 
 ```env
 # Requerido para análisis con IA
-ANTHROPIC_API_KEY=sk-ant-xxxxx
+OPENAI_API_KEY=sk-xxxxx
 
 # Requerido solo para trading en vivo
 COINBASE_API_KEY=your-api-key
@@ -106,7 +106,7 @@ src/trading_bot/
 ├── config.py        # Configuración (Pydantic Settings)
 ├── models.py        # Modelos de datos (Pydantic)
 ├── market_data.py   # Datos de mercado (Coinbase via ccxt)
-├── ai_analyst.py    # Análisis con IA (Claude/Anthropic)
+├── ai_analyst.py    # Análisis con IA (ChatGPT/OpenAI)
 ├── paper_trader.py  # Motor de paper trading
 ├── executor.py      # Ejecución de órdenes
 └── dashboard.py     # Dashboard CLI (Rich)
@@ -115,7 +115,7 @@ src/trading_bot/
 ## Flujo de operación
 
 1. **Obtener datos**: Se consultan precios, velas y volúmenes de Coinbase
-2. **Analizar con IA**: Claude analiza los datos y genera recomendaciones con niveles de confianza
+2. **Analizar con IA**: ChatGPT analiza los datos y genera recomendaciones con niveles de confianza
 3. **Filtrar señales**: Se filtran por confianza mínima y reglas de gestión de riesgo
 4. **Ejecutar**: Las operaciones se ejecutan en paper trading (simulación) o en vivo
 5. **Reportar**: Se muestra el informe, órdenes ejecutadas y estado del portafolio

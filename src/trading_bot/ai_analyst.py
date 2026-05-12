@@ -1,9 +1,9 @@
-"""AI-powered market analysis using Claude (Anthropic)."""
+"""AI-powered market analysis using ChatGPT (OpenAI)."""
 
 import json
 from datetime import UTC, datetime
 
-import anthropic
+import openai
 
 from trading_bot.config import Settings
 from trading_bot.models import AnalysisReport, MarketData, SignalStrength, TradeRecommendation
@@ -97,11 +97,11 @@ def _parse_recommendations(raw: dict) -> list[TradeRecommendation]:
 
 
 class AIAnalyst:
-    """AI-powered market analyst using Claude."""
+    """AI-powered market analyst using ChatGPT."""
 
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
-        self.client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+        self.client = openai.OpenAI(api_key=settings.openai_api_key)
 
     def analyze(self, market_data_list: list[MarketData]) -> AnalysisReport:
         """Analyze market data and generate trading recommendations."""
@@ -115,18 +115,20 @@ class AIAnalyst:
         )
 
         try:
-            message = self.client.messages.create(
+            response = self.client.chat.completions.create(
                 model=self.settings.analysis_model,
                 max_tokens=self.settings.max_tokens,
-                system=ANALYSIS_SYSTEM_PROMPT,
-                messages=[{"role": "user", "content": user_prompt}],
+                messages=[
+                    {"role": "system", "content": ANALYSIS_SYSTEM_PROMPT},
+                    {"role": "user", "content": user_prompt},
+                ],
             )
-        except anthropic.AuthenticationError:
+        except openai.AuthenticationError:
             raise SystemExit(
-                "Error: Invalid ANTHROPIC_API_KEY. Check your .env file or environment variable."
+                "Error: Invalid OPENAI_API_KEY. Check your .env file or environment variable."
             )
 
-        raw_text = message.content[0].text
+        raw_text = response.choices[0].message.content or ""
 
         try:
             parsed = json.loads(raw_text)

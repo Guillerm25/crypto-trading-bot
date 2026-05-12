@@ -9,9 +9,9 @@ from trading_bot.models import TradingMode
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
-    # Anthropic
-    anthropic_api_key: str = ""
-    analysis_model: str = "claude-sonnet-4-20250514"
+    # OpenAI
+    openai_api_key: str = ""
+    analysis_model: str = "gpt-4o"
     max_tokens: int = 4096
 
     # Coinbase
