@@ -4,45 +4,52 @@ import re
 
 from trading_bot.models import AnalysisReport, SignalStrength, TradeRecommendation
 
-KNOWN_SYMBOLS = {
-    "BTC": "BTC/USDT",
-    "BITCOIN": "BTC/USDT",
-    "ETH": "ETH/USDT",
-    "ETHEREUM": "ETH/USDT",
-    "SOL": "SOL/USDT",
-    "SOLANA": "SOL/USDT",
-    "XRP": "XRP/USDT",
-    "RIPPLE": "XRP/USDT",
-    "ADA": "ADA/USDT",
-    "CARDANO": "ADA/USDT",
-    "DOGE": "DOGE/USDT",
-    "DOGECOIN": "DOGE/USDT",
-    "DOT": "DOT/USDT",
-    "POLKADOT": "DOT/USDT",
-    "AVAX": "AVAX/USDT",
-    "AVALANCHE": "AVAX/USDT",
-    "LINK": "LINK/USDT",
-    "CHAINLINK": "LINK/USDT",
-    "MATIC": "MATIC/USDT",
-    "POLYGON": "MATIC/USDT",
-    "UNI": "UNI/USDT",
-    "UNISWAP": "UNI/USDT",
-    "ATOM": "ATOM/USDT",
-    "COSMOS": "ATOM/USDT",
-    "LTC": "LTC/USDT",
-    "LITECOIN": "LTC/USDT",
-    "SHIB": "SHIB/USDT",
-    "BNB": "BNB/USDT",
-    "NEAR": "NEAR/USDT",
-    "APT": "APT/USDT",
-    "APTOS": "APT/USDT",
-    "ARB": "ARB/USDT",
-    "ARBITRUM": "ARB/USDT",
-    "OP": "OP/USDT",
-    "OPTIMISM": "OP/USDT",
-    "SUI": "SUI/USDT",
-    "PEPE": "PEPE/USDT",
+KNOWN_TOKENS: dict[str, str] = {
+    "BTC": "BTC",
+    "BITCOIN": "BTC",
+    "ETH": "ETH",
+    "ETHEREUM": "ETH",
+    "SOL": "SOL",
+    "SOLANA": "SOL",
+    "XRP": "XRP",
+    "RIPPLE": "XRP",
+    "ADA": "ADA",
+    "CARDANO": "ADA",
+    "DOGE": "DOGE",
+    "DOGECOIN": "DOGE",
+    "DOT": "DOT",
+    "POLKADOT": "DOT",
+    "AVAX": "AVAX",
+    "AVALANCHE": "AVAX",
+    "LINK": "LINK",
+    "CHAINLINK": "LINK",
+    "MATIC": "MATIC",
+    "POLYGON": "MATIC",
+    "UNI": "UNI",
+    "UNISWAP": "UNI",
+    "ATOM": "ATOM",
+    "COSMOS": "ATOM",
+    "LTC": "LTC",
+    "LITECOIN": "LTC",
+    "SHIB": "SHIB",
+    "BNB": "BNB",
+    "NEAR": "NEAR",
+    "APT": "APT",
+    "APTOS": "APT",
+    "ARB": "ARB",
+    "ARBITRUM": "ARB",
+    "OP": "OP",
+    "OPTIMISM": "OP",
+    "SUI": "SUI",
+    "PEPE": "PEPE",
+    "BCH": "BCH",
+    "BITCOINCASH": "BCH",
 }
+
+
+def _build_symbols(quote: str) -> dict[str, str]:
+    """Build token -> full symbol mapping for the given quote currency."""
+    return {token: f"{base}/{quote}" for token, base in KNOWN_TOKENS.items()}
 
 BUY_KEYWORDS = [
     "comprar", "compra", "buy", "long", "alcista", "bullish",
@@ -118,14 +125,15 @@ def parse_analysis_text(text: str, quote_currency: str = "USDT") -> AnalysisRepo
     """
     recommendations: list[TradeRecommendation] = []
     symbol_tokens: dict[str, list[str]] = {}
+    symbols = _build_symbols(quote_currency)
 
-    for token, symbol in KNOWN_SYMBOLS.items():
+    for token, symbol in symbols.items():
         pattern = rf"\b{re.escape(token)}\b"
         if re.search(pattern, text, re.IGNORECASE):
             symbol_tokens.setdefault(symbol, []).append(token)
 
     all_tokens_pattern = "|".join(
-        re.escape(t) for t in sorted(KNOWN_SYMBOLS, key=len, reverse=True)
+        re.escape(t) for t in sorted(symbols, key=len, reverse=True)
     )
     all_mentions = list(
         re.finditer(rf"(?i)\b(?:{all_tokens_pattern})\b", text)
