@@ -9,11 +9,6 @@ from trading_bot.models import TradingMode
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
-    # OpenAI
-    openai_api_key: str = ""
-    analysis_model: str = "gpt-4o"
-    max_tokens: int = 4096
-
     # Coinbase
     coinbase_api_key: str = ""
     coinbase_api_secret: str = ""

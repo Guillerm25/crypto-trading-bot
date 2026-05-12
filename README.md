@@ -1,22 +1,21 @@
 # Crypto Trading Bot
 
-Bot de trading automatizado de criptomonedas con análisis impulsado por IA (ChatGPT de OpenAI) e integración con Coinbase.
+Bot de trading automatizado de criptomonedas. Pega tu análisis de ChatGPT (u otra fuente) y el bot interpreta las señales y ejecuta operaciones en Coinbase.
 
 ## Características
 
-- **Análisis con IA**: Utiliza ChatGPT (OpenAI) para analizar datos de mercado y generar recomendaciones de trading
+- **Parsing inteligente**: Interpreta texto libre en español o inglés — detecta señales de compra/venta, precios de entrada, stop-loss y take-profit
 - **Paper Trading**: Motor de simulación completo para probar estrategias sin riesgo
-- **Datos de mercado**: Obtiene precios en tiempo real, velas OHLCV y volúmenes desde Coinbase
-- **Ejecución automática**: Ejecuta operaciones basadas en las recomendaciones de la IA
+- **Datos de mercado**: Obtiene precios en tiempo real desde Coinbase
+- **Ejecución automática**: Ejecuta operaciones basadas en tu análisis
 - **Dashboard CLI**: Interfaz de línea de comandos con tablas formateadas y colores
-- **Gestión de riesgo**: Stop-loss, take-profit, límites de posición y confianza mínima configurables
+- **Gestión de riesgo**: Límites de posición y confianza mínima configurables
 - **Estado persistente**: El portafolio de paper trading se guarda en disco
 
 ## Requisitos
 
 - Python >= 3.11
-- Clave API de OpenAI (para análisis con IA)
-- Credenciales API de Coinbase (para trading en vivo, opcional para paper trading)
+- Credenciales API de Coinbase (para datos de mercado y trading)
 
 ## Instalación
 
@@ -30,7 +29,7 @@ uv sync
 
 # Copiar y configurar variables de entorno
 cp .env.example .env
-# Editar .env con tus claves API
+# Editar .env con tus claves de Coinbase
 ```
 
 ## Configuración
@@ -38,10 +37,7 @@ cp .env.example .env
 Edita el archivo `.env` con tus credenciales:
 
 ```env
-# Requerido para análisis con IA
-OPENAI_API_KEY=sk-xxxxx
-
-# Requerido solo para trading en vivo
+# Requerido para datos de mercado y trading
 COINBASE_API_KEY=your-api-key
 COINBASE_API_SECRET=your-api-secret
 
@@ -52,47 +48,53 @@ PAPER_TRADING_BALANCE=10000
 
 ## Uso
 
-### Ver datos de mercado
+### 1. Pegar análisis y ejecutar trades
+
+```bash
+# Interactivo: pega tu análisis, luego Ctrl+D
+uv run trading-bot execute
+
+# Desde un archivo
+uv run trading-bot execute -f mi_analisis.txt
+
+# Con ejecución automática
+uv run trading-bot execute --auto-execute
+
+# Desde un archivo con ejecución automática
+uv run trading-bot execute -f mi_analisis.txt --auto-execute
+```
+
+**Ejemplo de texto que el bot interpreta:**
+
+```
+Recomiendo comprar BTC con entrada en $80,000, stop-loss en $78,000 y 
+take-profit en $85,000. Confianza: 75%.
+
+ETH: mantener posición actual (hold).
+
+Vender SOL con precio objetivo $90.
+```
+
+El bot detecta automáticamente:
+- Símbolos: BTC, ETH, SOL (y 20+ criptomonedas más)
+- Señales: comprar/buy, vender/sell, mantener/hold
+- Precios: entrada, stop-loss, take-profit
+- Confianza: porcentajes
+
+### 2. Ver datos de mercado
 
 ```bash
 uv run trading-bot market
 uv run trading-bot market -s BTC/USDT,ETH/USDT
 ```
 
-### Ejecutar análisis con IA
-
-```bash
-uv run trading-bot analyze
-uv run trading-bot analyze -s BTC/USDT,ETH/USDT
-```
-
-### Ejecutar un ciclo de trading
-
-```bash
-# Sin ejecución automática (solo muestra recomendaciones)
-uv run trading-bot trade
-
-# Con ejecución automática de paper trading
-uv run trading-bot trade --auto-execute
-```
-
-### Bot en modo continuo
-
-```bash
-# Ejecutar cada hora (3600 segundos)
-uv run trading-bot run
-
-# Ejecutar cada 30 minutos
-uv run trading-bot run -i 1800
-```
-
-### Ver estado del portafolio
+### 3. Ver estado del portafolio
 
 ```bash
 uv run trading-bot status
 ```
 
-### Resetear paper trading
+### 4. Resetear paper trading
 
 ```bash
 uv run trading-bot reset
@@ -105,8 +107,8 @@ src/trading_bot/
 ├── main.py          # CLI principal (Click)
 ├── config.py        # Configuración (Pydantic Settings)
 ├── models.py        # Modelos de datos (Pydantic)
+├── text_parser.py   # Parser de texto libre → señales de trading
 ├── market_data.py   # Datos de mercado (Coinbase via ccxt)
-├── ai_analyst.py    # Análisis con IA (ChatGPT/OpenAI)
 ├── paper_trader.py  # Motor de paper trading
 ├── executor.py      # Ejecución de órdenes
 └── dashboard.py     # Dashboard CLI (Rich)
@@ -114,11 +116,11 @@ src/trading_bot/
 
 ## Flujo de operación
 
-1. **Obtener datos**: Se consultan precios, velas y volúmenes de Coinbase
-2. **Analizar con IA**: ChatGPT analiza los datos y genera recomendaciones con niveles de confianza
-3. **Filtrar señales**: Se filtran por confianza mínima y reglas de gestión de riesgo
-4. **Ejecutar**: Las operaciones se ejecutan en paper trading (simulación) o en vivo
-5. **Reportar**: Se muestra el informe, órdenes ejecutadas y estado del portafolio
+1. **Obtener análisis**: Genera tu análisis en ChatGPT u otra IA
+2. **Pegar en el bot**: Ejecuta `trading-bot execute` y pega el texto
+3. **Parsing automático**: El bot detecta símbolos, señales y precios
+4. **Ejecutar**: Con `--auto-execute`, las operaciones se ejecutan en paper trading
+5. **Reportar**: Se muestra el portafolio actualizado
 
 ## Tests
 

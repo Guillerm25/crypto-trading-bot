@@ -1,7 +1,7 @@
 [project]
 name = "crypto-trading-bot"
 version = "0.1.0"
-description = "Automated crypto trading bot with AI-powered analysis (ChatGPT) and Coinbase integration"
+description = "Automated crypto trading bot - paste your analysis and execute trades on Coinbase"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
@@ -9,7 +9,6 @@ authors = [{ name = "Guillermo de Porras", email = "guillermo.deporras@gmail.com
 
 dependencies = [
     "ccxt>=4.0.0",
-    "openai>=1.0.0",
     "pydantic>=2.0.0",
     "pydantic-settings>=2.0.0",
     "rich>=13.0.0",
