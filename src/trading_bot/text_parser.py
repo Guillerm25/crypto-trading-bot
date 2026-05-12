@@ -141,9 +141,14 @@ def parse_analysis_text(text: str, quote_currency: str = "USDT") -> AnalysisRepo
             continue
 
         first_pos = matches[0].start()
-        block_start = max(0, first_pos - 80)
-
         idx = mention_starts.index(first_pos) if first_pos in mention_starts else -1
+
+        lookback = text[max(0, first_pos - 80) : first_pos]
+        newline_pos = lookback.rfind("\n")
+        if newline_pos >= 0:
+            block_start = max(0, first_pos - 80) + newline_pos + 1
+        else:
+            block_start = max(0, first_pos - 80)
         if idx >= 0 and idx + 1 < len(mention_starts):
             block_end = mention_starts[idx + 1]
         else:
