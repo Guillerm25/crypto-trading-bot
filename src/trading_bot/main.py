@@ -14,7 +14,9 @@ from trading_bot.dashboard import (
 )
 from trading_bot.executor import TradeExecutor
 from trading_bot.market_data import MarketDataFetcher
+from trading_bot.models import TradingMode
 from trading_bot.paper_trader import PaperTrader
+from trading_bot.sandbox_trader import SandboxTrader
 from trading_bot.text_parser import parse_analysis_text
 
 console = Console()
@@ -112,22 +114,48 @@ def execute(file_path: str | None, auto_execute: bool) -> None:
     if auto_execute:
         fetcher = MarketDataFetcher(settings)
         paper_trader = PaperTrader(initial_balance=settings.paper_trading_balance)
-        executor = TradeExecutor(settings, fetcher, paper_trader)
+
+        sandbox_trader = None
+        if settings.trading_mode == TradingMode.SANDBOX:
+            if not settings.coinbase_sandbox_api_key:
+                console.print(
+                    "[red]Error: Sandbox mode requires COINBASE_SANDBOX_API_KEY, "
+                    "COINBASE_SANDBOX_API_SECRET, and COINBASE_SANDBOX_PASSPHRASE.\n"
+                    "Create sandbox credentials at: "
+                    "https://public.sandbox.exchange.coinbase.com[/red]"
+                )
+                raise SystemExit(1)
+            sandbox_trader = SandboxTrader(settings)
+            console.print(
+                "[bold magenta]Mode: SANDBOX — orders sent to Coinbase "
+                "Exchange Sandbox (demo wallet)[/bold magenta]\n"
+            )
+
+        executor = TradeExecutor(settings, fetcher, paper_trader, sandbox_trader)
 
         console.print("[bold]Executing recommendations...[/bold]\n")
         orders = executor.execute_recommendations(report)
         display_executed_orders(orders)
 
-        console.print("[bold]Portfolio Status:[/bold]")
-        prices: dict[str, float] = {}
-        for rec in report.recommendations:
+        if settings.trading_mode == TradingMode.SANDBOX and sandbox_trader:
+            console.print("[bold]Sandbox Account Balances:[/bold]")
             try:
-                ticker = fetcher.fetch_ticker(rec.symbol)
-                prices[rec.symbol] = ticker.current_price
-            except Exception:
-                pass
-        paper_trader.update_prices(prices)
-        display_portfolio(paper_trader.get_portfolio())
+                balances = sandbox_trader.fetch_balance()
+                for currency, amount in sorted(balances.items()):
+                    console.print(f"  {currency}: {amount:,.8f}")
+            except Exception as exc:
+                console.print(f"  [yellow]Could not fetch balances: {exc}[/yellow]")
+        else:
+            console.print("[bold]Portfolio Status:[/bold]")
+            prices: dict[str, float] = {}
+            for rec in report.recommendations:
+                try:
+                    ticker = fetcher.fetch_ticker(rec.symbol)
+                    prices[rec.symbol] = ticker.current_price
+                except Exception:
+                    pass
+            paper_trader.update_prices(prices)
+            display_portfolio(paper_trader.get_portfolio())
     else:
         console.print(
             "[yellow]Run with --auto-execute to execute trades based on "

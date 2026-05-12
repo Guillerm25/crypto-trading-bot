@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 
 class TradingMode(StrEnum):
     PAPER = "paper"
+    SANDBOX = "sandbox"
     LIVE = "live"
 
 

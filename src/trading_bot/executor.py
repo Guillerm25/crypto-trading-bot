@@ -1,4 +1,4 @@
-"""Order execution module - routes orders to paper or live trading."""
+"""Order execution module - routes orders to paper, sandbox, or live trading."""
 
 from rich.console import Console
 
@@ -13,25 +13,28 @@ from trading_bot.models import (
     TradingMode,
 )
 from trading_bot.paper_trader import PaperTrader
+from trading_bot.sandbox_trader import SandboxTrader
 
 console = Console()
 
 
 class TradeExecutor:
-    """Executes trades based on AI recommendations."""
+    """Executes trades based on analysis recommendations."""
 
     def __init__(
         self,
         settings: Settings,
         market_data: MarketDataFetcher,
         paper_trader: PaperTrader,
+        sandbox_trader: SandboxTrader | None = None,
     ) -> None:
         self.settings = settings
         self.market_data = market_data
         self.paper_trader = paper_trader
+        self.sandbox_trader = sandbox_trader
 
     def execute_recommendations(self, report: AnalysisReport) -> list[Order]:
-        """Execute actionable recommendations from the AI analysis."""
+        """Execute actionable recommendations from the analysis."""
         executed_orders: list[Order] = []
         portfolio = self.paper_trader.get_portfolio()
 
@@ -86,11 +89,20 @@ class TradeExecutor:
 
         amount = budget / price
 
-        order = self.paper_trader.execute_order(symbol, OrderSide.BUY, amount, price)
-        console.print(
-            f"  [green]BUY {symbol}: {amount:.6f} @ ${price:,.2f} "
-            f"(${budget:,.2f})[/green]"
-        )
+        if self.settings.trading_mode == TradingMode.SANDBOX and self.sandbox_trader:
+            order = self.sandbox_trader.execute_order(
+                symbol, OrderSide.BUY, amount, price
+            )
+            console.print(
+                f"  [green]SANDBOX BUY {symbol}: {amount:.6f} @ ${price:,.2f} "
+                f"(${budget:,.2f})[/green]"
+            )
+        else:
+            order = self.paper_trader.execute_order(symbol, OrderSide.BUY, amount, price)
+            console.print(
+                f"  [green]BUY {symbol}: {amount:.6f} @ ${price:,.2f} "
+                f"(${budget:,.2f})[/green]"
+            )
         return order
 
     def _execute_sell(self, symbol: str) -> Order | None:
@@ -109,11 +121,19 @@ class TradeExecutor:
         ticker = self.market_data.fetch_ticker(symbol)
         price = ticker.current_price
 
-        order = self.paper_trader.execute_order(symbol, OrderSide.SELL, sell_amount, price)
+        if self.settings.trading_mode == TradingMode.SANDBOX and self.sandbox_trader:
+            order = self.sandbox_trader.execute_order(
+                symbol, OrderSide.SELL, sell_amount, price
+            )
+        else:
+            order = self.paper_trader.execute_order(
+                symbol, OrderSide.SELL, sell_amount, price
+            )
         pnl = (price - sell_entry) * sell_amount
         color = "green" if pnl >= 0 else "red"
+        prefix = "SANDBOX " if self.settings.trading_mode == TradingMode.SANDBOX else ""
         console.print(
-            f"  [{color}]SELL {symbol}: {sell_amount:.6f} @ ${price:,.2f} "
+            f"  [{color}]{prefix}SELL {symbol}: {sell_amount:.6f} @ ${price:,.2f} "
             f"(PnL: ${pnl:,.2f})[/{color}]"
         )
         return order

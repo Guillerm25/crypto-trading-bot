@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 import ccxt
 
 from trading_bot.config import Settings
-from trading_bot.models import OHLCV, MarketData
+from trading_bot.models import OHLCV, MarketData, TradingMode
 
 
 class MarketDataFetcher:
@@ -13,13 +13,22 @@ class MarketDataFetcher:
 
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
-        exchange_config: dict[str, object] = {"enableRateLimit": True}
+        self.is_sandbox = settings.trading_mode == TradingMode.SANDBOX
 
-        if settings.coinbase_api_key and settings.coinbase_api_secret:
-            exchange_config["apiKey"] = settings.coinbase_api_key
-            exchange_config["secret"] = settings.coinbase_api_secret
-
-        self.exchange = ccxt.coinbase(exchange_config)
+        if self.is_sandbox:
+            exchange_config: dict[str, object] = {"enableRateLimit": True}
+            if settings.coinbase_sandbox_api_key:
+                exchange_config["apiKey"] = settings.coinbase_sandbox_api_key
+                exchange_config["secret"] = settings.coinbase_sandbox_api_secret
+                exchange_config["password"] = settings.coinbase_sandbox_passphrase
+            self.exchange = ccxt.coinbaseexchange(exchange_config)
+            self.exchange.set_sandbox_mode(True)
+        else:
+            exchange_config = {"enableRateLimit": True}
+            if settings.coinbase_api_key and settings.coinbase_api_secret:
+                exchange_config["apiKey"] = settings.coinbase_api_key
+                exchange_config["secret"] = settings.coinbase_api_secret
+            self.exchange = ccxt.coinbase(exchange_config)
 
     def fetch_ticker(self, symbol: str) -> MarketData:
         """Fetch current ticker data for a symbol."""
