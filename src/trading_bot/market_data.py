@@ -16,17 +16,9 @@ class MarketDataFetcher:
         self.is_sandbox = settings.trading_mode == TradingMode.SANDBOX
 
         exchange_config: dict[str, object] = {"enableRateLimit": True}
+        self.exchange = ccxt.bybit(exchange_config)
         if self.is_sandbox:
-            if settings.bybit_testnet_api_key:
-                exchange_config["apiKey"] = settings.bybit_testnet_api_key
-                exchange_config["secret"] = settings.bybit_testnet_api_secret
-            self.exchange = ccxt.bybit(exchange_config)
             self.exchange.set_sandbox_mode(True)
-        else:
-            if settings.bybit_api_key and settings.bybit_api_secret:
-                exchange_config["apiKey"] = settings.bybit_api_key
-                exchange_config["secret"] = settings.bybit_api_secret
-            self.exchange = ccxt.bybit(exchange_config)
 
     def fetch_ticker(self, symbol: str) -> MarketData:
         """Fetch current ticker data for a symbol."""
