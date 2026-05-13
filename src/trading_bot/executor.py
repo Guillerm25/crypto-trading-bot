@@ -93,6 +93,7 @@ class TradeExecutor:
             order = self.sandbox_trader.execute_order(
                 symbol, OrderSide.BUY, amount, price
             )
+            self.paper_trader.execute_order(symbol, OrderSide.BUY, amount, price)
             console.print(
                 f"  [green]SANDBOX BUY {symbol}: {amount:.6f} @ ${price:,.2f} "
                 f"(${budget:,.2f})[/green]"
@@ -123,6 +124,9 @@ class TradeExecutor:
 
         if self.settings.trading_mode == TradingMode.SANDBOX and self.sandbox_trader:
             order = self.sandbox_trader.execute_order(
+                symbol, OrderSide.SELL, sell_amount, price
+            )
+            self.paper_trader.execute_order(
                 symbol, OrderSide.SELL, sell_amount, price
             )
         else:

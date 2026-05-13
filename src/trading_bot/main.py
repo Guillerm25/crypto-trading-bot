@@ -32,9 +32,47 @@ def cli() -> None:
 def status() -> None:
     """Show current portfolio status and open positions."""
     settings = load_settings()
+
+    if settings.trading_mode == TradingMode.SANDBOX:
+        if not settings.bybit_testnet_api_key:
+            console.print(
+                "[red]Error: Sandbox mode requires BYBIT_TESTNET_API_KEY "
+                "and BYBIT_TESTNET_API_SECRET.\n"
+                "Create testnet credentials at: "
+                "https://testnet.bybit.com[/red]"
+            )
+            raise SystemExit(1)
+        sandbox_trader = SandboxTrader(settings)
+        console.print(
+            "[bold magenta]Mode: SANDBOX (Bybit Testnet)[/bold magenta]\n"
+        )
+        ok, msg = sandbox_trader.validate_credentials()
+        if not ok:
+            console.print(
+                f"[red]Error: {msg}\n\n"
+                "Make sure you created the API keys at https://testnet.bybit.com "
+                "(NOT at www.bybit.com).\n"
+                "Testnet keys and production keys are different.[/red]"
+            )
+            raise SystemExit(1)
+        console.print("[bold]Bybit Testnet Balances:[/bold]")
+        try:
+            balances = sandbox_trader.fetch_balance()
+            if balances:
+                for currency, amount in sorted(balances.items()):
+                    console.print(f"  {currency}: {amount:,.8f}")
+            else:
+                console.print("  [yellow]No funds in testnet account.[/yellow]")
+                console.print(
+                    "  [yellow]Log in at https://testnet.bybit.com to "
+                    "get demo funds.[/yellow]"
+                )
+        except Exception as exc:
+            console.print(f"  [yellow]Could not fetch balances: {exc}[/yellow]")
+        console.print()
+
     paper_trader = PaperTrader(initial_balance=settings.paper_trading_balance)
     market_data = MarketDataFetcher(settings)
-
     portfolio = paper_trader.get_portfolio()
 
     if portfolio.positions:
@@ -128,7 +166,19 @@ def execute(file_path: str | None, auto_execute: bool) -> None:
             sandbox_trader = SandboxTrader(settings)
             console.print(
                 "[bold magenta]Mode: SANDBOX — orders sent to Bybit "
-                "Testnet (demo wallet)[/bold magenta]\n"
+                "Testnet (demo wallet)[/bold magenta]"
+            )
+            ok, msg = sandbox_trader.validate_credentials()
+            if not ok:
+                console.print(
+                    f"[red]Error: {msg}\n\n"
+                    "Make sure you created the API keys at "
+                    "https://testnet.bybit.com (NOT at www.bybit.com).\n"
+                    "Testnet keys and production keys are different.[/red]"
+                )
+                raise SystemExit(1)
+            console.print(
+                "[green]Credentials validated successfully.[/green]\n"
             )
 
         executor = TradeExecutor(settings, fetcher, paper_trader, sandbox_trader)
@@ -138,24 +188,27 @@ def execute(file_path: str | None, auto_execute: bool) -> None:
         display_executed_orders(orders)
 
         if settings.trading_mode == TradingMode.SANDBOX and sandbox_trader:
-            console.print("[bold]Sandbox Account Balances:[/bold]")
+            console.print("\n[bold]Bybit Testnet Balances:[/bold]")
             try:
                 balances = sandbox_trader.fetch_balance()
-                for currency, amount in sorted(balances.items()):
-                    console.print(f"  {currency}: {amount:,.8f}")
+                if balances:
+                    for currency, amount in sorted(balances.items()):
+                        console.print(f"  {currency}: {amount:,.8f}")
+                else:
+                    console.print("  [yellow]No funds in testnet account.[/yellow]")
             except Exception as exc:
                 console.print(f"  [yellow]Could not fetch balances: {exc}[/yellow]")
-        else:
-            console.print("[bold]Portfolio Status:[/bold]")
-            prices: dict[str, float] = {}
-            for rec in report.recommendations:
-                try:
-                    ticker = fetcher.fetch_ticker(rec.symbol)
-                    prices[rec.symbol] = ticker.current_price
-                except Exception:
-                    pass
-            paper_trader.update_prices(prices)
-            display_portfolio(paper_trader.get_portfolio())
+
+        console.print("\n[bold]Portfolio Status:[/bold]")
+        prices: dict[str, float] = {}
+        for rec in report.recommendations:
+            try:
+                ticker = fetcher.fetch_ticker(rec.symbol)
+                prices[rec.symbol] = ticker.current_price
+            except Exception:
+                pass
+        paper_trader.update_prices(prices)
+        display_portfolio(paper_trader.get_portfolio())
     else:
         console.print(
             "[yellow]Run with --auto-execute to execute trades based on "

@@ -55,6 +55,16 @@ class SandboxTrader:
 
         return order
 
+    def validate_credentials(self) -> tuple[bool, str]:
+        """Validate testnet API credentials. Returns (ok, message)."""
+        try:
+            self.exchange.fetch_balance()
+            return True, "Credentials valid"
+        except ccxt.AuthenticationError as exc:
+            return False, f"Invalid API key: {exc}"
+        except ccxt.BaseError as exc:
+            return False, f"Connection error: {exc}"
+
     def fetch_balance(self) -> dict[str, float]:
         """Fetch current testnet account balances."""
         balance = self.exchange.fetch_balance()
