@@ -15,10 +15,11 @@ echo   3. Ejecutar desde archivo
 echo   4. Ver precios de mercado
 echo   5. Ver estado del portafolio
 echo   6. Resetear portafolio (paper trading)
-echo   7. Salir
+echo   7. Diagnostico (ver pares disponibles)
+echo   8. Salir
 echo.
 echo ============================================
-set /p opcion="Elige una opcion (1-7): "
+set /p opcion="Elige una opcion (1-8): "
 
 if "%opcion%"=="1" goto ejecutar
 if "%opcion%"=="2" goto autoexecutar
@@ -26,7 +27,8 @@ if "%opcion%"=="3" goto desde_archivo
 if "%opcion%"=="4" goto mercado
 if "%opcion%"=="5" goto estado
 if "%opcion%"=="6" goto resetear
-if "%opcion%"=="7" goto salir
+if "%opcion%"=="7" goto diagnostico
+if "%opcion%"=="8" goto salir
 
 echo Opcion no valida.
 timeout /t 2 >nul
@@ -94,6 +96,17 @@ goto menu
 cls
 echo.
 uv run trading-bot reset
+echo.
+pause
+goto menu
+
+:diagnostico
+cls
+echo ============================================
+echo   Diagnostico - Pares disponibles
+echo ============================================
+echo.
+uv run trading-bot diagnose
 echo.
 pause
 goto menu

@@ -231,5 +231,62 @@ def reset() -> None:
     console.print("[green]Paper trading portfolio has been reset.[/green]")
 
 
+@cli.command()
+def diagnose() -> None:
+    """Show available symbols and connection info for debugging."""
+    settings = load_settings()
+    console.print(f"[bold]Trading Mode:[/bold] {settings.trading_mode.value}")
+    console.print(f"[bold]Bybit Hostname:[/bold] {settings.bybit_hostname}")
+    console.print(
+        f"[bold]Demo Trading:[/bold] {settings.bybit_demo_trading}\n"
+    )
+
+    console.print("[bold]Mainnet markets (bybit.com):[/bold]")
+    fetcher = MarketDataFetcher(settings)
+    usdt_symbols = [
+        s for s in sorted(fetcher.exchange.symbols) if "/USDT" in s
+    ]
+    spot = [s for s in usdt_symbols if ":" not in s]
+    linear = [s for s in usdt_symbols if ":USDT" in s]
+    console.print(f"  Spot USDT pairs: {len(spot)}")
+    console.print(f"  Linear USDT pairs: {len(linear)}")
+    for sym in settings.trading_symbols:
+        resolved = fetcher._resolve_symbol(sym)
+        status = "spot" if ":" not in resolved else "linear"
+        console.print(f"  {sym} -> {resolved} ({status})")
+
+    if settings.trading_mode == TradingMode.SANDBOX:
+        console.print(f"\n[bold]Testnet markets ({settings.bybit_hostname}):[/bold]")
+        if not settings.bybit_testnet_api_key:
+            console.print("  [red]No testnet credentials configured[/red]")
+        else:
+            try:
+                sandbox = SandboxTrader(settings)
+                t_usdt = [
+                    s
+                    for s in sorted(sandbox.exchange.symbols)
+                    if "/USDT" in s
+                ]
+                t_spot = [s for s in t_usdt if ":" not in s]
+                t_linear = [s for s in t_usdt if ":USDT" in s]
+                console.print(f"  Spot USDT pairs: {len(t_spot)}")
+                console.print(f"  Linear USDT pairs: {len(t_linear)}")
+                if t_spot:
+                    console.print(f"  Spot examples: {', '.join(t_spot[:10])}")
+                if t_linear:
+                    console.print(
+                        f"  Linear examples: {', '.join(t_linear[:10])}"
+                    )
+                for sym in settings.trading_symbols:
+                    try:
+                        resolved = sandbox._resolve_symbol(sym)
+                        status = "spot" if ":" not in resolved else "linear"
+                        console.print(f"  {sym} -> {resolved} ({status})")
+                    except Exception:
+                        console.print(f"  {sym} -> [red]NOT AVAILABLE[/red]")
+            except Exception as exc:
+                console.print(f"  [red]Error: {exc}[/red]")
+
+
 if __name__ == "__main__":
     cli()
