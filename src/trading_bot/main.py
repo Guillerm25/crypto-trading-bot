@@ -117,18 +117,18 @@ def execute(file_path: str | None, auto_execute: bool) -> None:
 
         sandbox_trader = None
         if settings.trading_mode == TradingMode.SANDBOX:
-            if not settings.coinbase_sandbox_api_key:
+            if not settings.bybit_testnet_api_key:
                 console.print(
-                    "[red]Error: Sandbox mode requires COINBASE_SANDBOX_API_KEY, "
-                    "COINBASE_SANDBOX_API_SECRET, and COINBASE_SANDBOX_PASSPHRASE.\n"
-                    "Create sandbox credentials at: "
-                    "https://public.sandbox.exchange.coinbase.com[/red]"
+                    "[red]Error: Sandbox mode requires BYBIT_TESTNET_API_KEY "
+                    "and BYBIT_TESTNET_API_SECRET.\n"
+                    "Create testnet credentials at: "
+                    "https://testnet.bybit.com[/red]"
                 )
                 raise SystemExit(1)
             sandbox_trader = SandboxTrader(settings)
             console.print(
-                "[bold magenta]Mode: SANDBOX — orders sent to Coinbase "
-                "Exchange Sandbox (demo wallet)[/bold magenta]\n"
+                "[bold magenta]Mode: SANDBOX — orders sent to Bybit "
+                "Testnet (demo wallet)[/bold magenta]\n"
             )
 
         executor = TradeExecutor(settings, fetcher, paper_trader, sandbox_trader)

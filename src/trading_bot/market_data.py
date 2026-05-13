@@ -1,4 +1,4 @@
-"""Market data fetching from Coinbase via ccxt."""
+"""Market data fetching from Bybit via ccxt."""
 
 from datetime import UTC, datetime
 
@@ -9,26 +9,24 @@ from trading_bot.models import OHLCV, MarketData, TradingMode
 
 
 class MarketDataFetcher:
-    """Fetches market data from Coinbase using ccxt."""
+    """Fetches market data from Bybit using ccxt."""
 
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
         self.is_sandbox = settings.trading_mode == TradingMode.SANDBOX
 
+        exchange_config: dict[str, object] = {"enableRateLimit": True}
         if self.is_sandbox:
-            exchange_config: dict[str, object] = {"enableRateLimit": True}
-            if settings.coinbase_sandbox_api_key:
-                exchange_config["apiKey"] = settings.coinbase_sandbox_api_key
-                exchange_config["secret"] = settings.coinbase_sandbox_api_secret
-                exchange_config["password"] = settings.coinbase_sandbox_passphrase
-            self.exchange = ccxt.coinbaseexchange(exchange_config)
+            if settings.bybit_testnet_api_key:
+                exchange_config["apiKey"] = settings.bybit_testnet_api_key
+                exchange_config["secret"] = settings.bybit_testnet_api_secret
+            self.exchange = ccxt.bybit(exchange_config)
             self.exchange.set_sandbox_mode(True)
         else:
-            exchange_config = {"enableRateLimit": True}
-            if settings.coinbase_api_key and settings.coinbase_api_secret:
-                exchange_config["apiKey"] = settings.coinbase_api_key
-                exchange_config["secret"] = settings.coinbase_api_secret
-            self.exchange = ccxt.coinbase(exchange_config)
+            if settings.bybit_api_key and settings.bybit_api_secret:
+                exchange_config["apiKey"] = settings.bybit_api_key
+                exchange_config["secret"] = settings.bybit_api_secret
+            self.exchange = ccxt.bybit(exchange_config)
 
     def fetch_ticker(self, symbol: str) -> MarketData:
         """Fetch current ticker data for a symbol."""

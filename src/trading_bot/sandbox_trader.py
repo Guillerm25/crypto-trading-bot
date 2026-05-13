@@ -1,4 +1,4 @@
-"""Sandbox trading via Coinbase Exchange Sandbox API."""
+"""Sandbox trading via Bybit Testnet API."""
 
 import uuid
 from datetime import UTC, datetime
@@ -10,23 +10,22 @@ from trading_bot.models import Order, OrderSide, OrderStatus, OrderType
 
 
 class SandboxTrader:
-    """Executes real orders against the Coinbase Exchange Sandbox."""
+    """Executes real orders against the Bybit Testnet."""
 
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
         config: dict[str, object] = {
             "enableRateLimit": True,
-            "apiKey": settings.coinbase_sandbox_api_key,
-            "secret": settings.coinbase_sandbox_api_secret,
-            "password": settings.coinbase_sandbox_passphrase,
+            "apiKey": settings.bybit_testnet_api_key,
+            "secret": settings.bybit_testnet_api_secret,
         }
-        self.exchange = ccxt.coinbaseexchange(config)
+        self.exchange = ccxt.bybit(config)
         self.exchange.set_sandbox_mode(True)
 
     def execute_order(
         self, symbol: str, side: OrderSide, amount: float, price: float
     ) -> Order:
-        """Place an order on the Coinbase Exchange Sandbox."""
+        """Place an order on the Bybit Testnet."""
         order = Order(
             id=str(uuid.uuid4())[:8],
             symbol=symbol,
@@ -52,12 +51,12 @@ class SandboxTrader:
         except ccxt.BaseError as exc:
             order.status = OrderStatus.FAILED
             order.id = f"ERR-{order.id}"
-            raise RuntimeError(f"Sandbox order failed: {exc}") from exc
+            raise RuntimeError(f"Testnet order failed: {exc}") from exc
 
         return order
 
     def fetch_balance(self) -> dict[str, float]:
-        """Fetch current sandbox account balances."""
+        """Fetch current testnet account balances."""
         balance = self.exchange.fetch_balance()
         result: dict[str, float] = {}
         for currency, data in balance.get("total", {}).items():
@@ -66,5 +65,5 @@ class SandboxTrader:
         return result
 
     def fetch_open_orders(self, symbol: str | None = None) -> list[dict[str, object]]:
-        """Fetch open orders from sandbox."""
+        """Fetch open orders from testnet."""
         return self.exchange.fetch_open_orders(symbol)

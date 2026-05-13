@@ -1,12 +1,12 @@
 # Crypto Trading Bot
 
-Bot de trading automatizado de criptomonedas. Pega tu análisis de ChatGPT (u otra fuente) y el bot interpreta las señales y ejecuta operaciones en Coinbase.
+Bot de trading automatizado de criptomonedas. Pega tu análisis de ChatGPT (u otra fuente) y el bot interpreta las señales y ejecuta operaciones en Bybit.
 
 ## Características
 
 - **Parsing inteligente**: Interpreta texto libre en español o inglés — detecta señales de compra/venta, precios de entrada, stop-loss y take-profit
 - **Paper Trading**: Motor de simulación completo para probar estrategias sin riesgo
-- **Datos de mercado**: Obtiene precios en tiempo real desde Coinbase
+- **Datos de mercado**: Obtiene precios en tiempo real desde Bybit
 - **Ejecución automática**: Ejecuta operaciones basadas en tu análisis
 - **Dashboard CLI**: Interfaz de línea de comandos con tablas formateadas y colores
 - **Gestión de riesgo**: Límites de posición y confianza mínima configurables
@@ -15,7 +15,7 @@ Bot de trading automatizado de criptomonedas. Pega tu análisis de ChatGPT (u ot
 ## Requisitos
 
 - Python >= 3.11
-- Credenciales API de Coinbase (para datos de mercado y trading)
+- Credenciales API de Bybit (para datos de mercado y trading)
 
 ## Instalación
 
@@ -29,7 +29,7 @@ uv sync
 
 # Copiar y configurar variables de entorno
 cp .env.example .env
-# Editar .env con tus claves de Coinbase
+# Editar .env con tus claves de Bybit
 ```
 
 ## Configuración
@@ -37,11 +37,15 @@ cp .env.example .env
 Edita el archivo `.env` con tus credenciales:
 
 ```env
-# Requerido para datos de mercado y trading
-COINBASE_API_KEY=your-api-key
-COINBASE_API_SECRET=your-api-secret
+# Bybit API (para datos de mercado)
+BYBIT_API_KEY=your-api-key
+BYBIT_API_SECRET=your-api-secret
 
-# Modo de trading: paper (simulación) o live
+# Bybit Testnet (para demo wallet)
+BYBIT_TESTNET_API_KEY=your-testnet-api-key
+BYBIT_TESTNET_API_SECRET=your-testnet-api-secret
+
+# Modo de trading: paper (simulación), sandbox (testnet) o live
 TRADING_MODE=paper
 PAPER_TRADING_BALANCE=10000
 ```
@@ -108,8 +112,9 @@ src/trading_bot/
 ├── config.py        # Configuración (Pydantic Settings)
 ├── models.py        # Modelos de datos (Pydantic)
 ├── text_parser.py   # Parser de texto libre → señales de trading
-├── market_data.py   # Datos de mercado (Coinbase via ccxt)
+├── market_data.py   # Datos de mercado (Bybit via ccxt)
 ├── paper_trader.py  # Motor de paper trading
+├── sandbox_trader.py # Trading en Bybit Testnet
 ├── executor.py      # Ejecución de órdenes
 └── dashboard.py     # Dashboard CLI (Rich)
 ```

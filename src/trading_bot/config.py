@@ -9,14 +9,13 @@ from trading_bot.models import TradingMode
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
-    # Coinbase Advanced Trade API (production / market data)
-    coinbase_api_key: str = ""
-    coinbase_api_secret: str = ""
+    # Bybit API (production / market data)
+    bybit_api_key: str = ""
+    bybit_api_secret: str = ""
 
-    # Coinbase Exchange Sandbox (demo wallet)
-    coinbase_sandbox_api_key: str = ""
-    coinbase_sandbox_api_secret: str = ""
-    coinbase_sandbox_passphrase: str = ""
+    # Bybit Testnet (demo wallet)
+    bybit_testnet_api_key: str = ""
+    bybit_testnet_api_secret: str = ""
 
     # Trading
     trading_mode: TradingMode = TradingMode.PAPER

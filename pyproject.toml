@@ -1,7 +1,7 @@
 [project]
 name = "crypto-trading-bot"
 version = "0.1.0"
-description = "Automated crypto trading bot - paste your analysis and execute trades on Coinbase"
+description = "Automated crypto trading bot - paste your analysis and execute trades on Bybit"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
