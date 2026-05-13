@@ -19,6 +19,16 @@ Bot de trading automatizado de criptomonedas. Pega tu análisis de ChatGPT (u ot
 
 ## Instalación
 
+### Windows (fácil)
+
+1. Instala [Python 3.11+](https://www.python.org/downloads/) (marca "Add Python to PATH")
+2. Descarga o clona este repositorio
+3. Haz doble clic en `install.bat`
+4. Edita el archivo `.env` con tus credenciales de Bybit
+5. Haz doble clic en `trading-bot.bat` para usar el bot
+
+### Linux / Mac
+
 ```bash
 # Clonar el repositorio
 git clone https://github.com/Guillerm25/crypto-trading-bot.git
@@ -52,7 +62,18 @@ PAPER_TRADING_BALANCE=10000
 
 ## Uso
 
-### 1. Pegar análisis y ejecutar trades
+### Windows
+
+Haz doble clic en `trading-bot.bat` — se abre un menú interactivo donde puedes:
+1. Pegar tu análisis de ChatGPT
+2. Ejecutar trades automáticamente
+3. Ver precios de mercado
+4. Ver estado del portafolio
+5. Resetear portafolio
+
+### Linux / Mac
+
+#### 1. Pegar análisis y ejecutar trades
 
 ```bash
 # Interactivo: pega tu análisis, luego Ctrl+D
@@ -85,20 +106,20 @@ El bot detecta automáticamente:
 - Precios: entrada, stop-loss, take-profit
 - Confianza: porcentajes
 
-### 2. Ver datos de mercado
+#### 2. Ver datos de mercado
 
 ```bash
 uv run trading-bot market
 uv run trading-bot market -s BTC/USDT,ETH/USDT
 ```
 
-### 3. Ver estado del portafolio
+#### 3. Ver estado del portafolio
 
 ```bash
 uv run trading-bot status
 ```
 
-### 4. Resetear paper trading
+#### 4. Resetear paper trading
 
 ```bash
 uv run trading-bot reset
