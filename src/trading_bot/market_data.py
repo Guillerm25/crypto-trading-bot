@@ -15,7 +15,10 @@ class MarketDataFetcher:
         self.settings = settings
         self.is_sandbox = settings.trading_mode == TradingMode.SANDBOX
 
-        exchange_config: dict[str, object] = {"enableRateLimit": True}
+        exchange_config: dict[str, object] = {
+            "enableRateLimit": True,
+            "hostname": settings.bybit_hostname,
+        }
         self.exchange = ccxt.bybit(exchange_config)
         if self.is_sandbox:
             self.exchange.set_sandbox_mode(True)

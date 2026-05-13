@@ -17,6 +17,9 @@ class Settings(BaseSettings):
     bybit_testnet_api_key: str = ""
     bybit_testnet_api_secret: str = ""
 
+    # Bybit hostname (use bybit.eu for Europe, bybit.com for global)
+    bybit_hostname: str = "bybit.com"
+
     # Trading
     trading_mode: TradingMode = TradingMode.PAPER
     default_quote_currency: str = "USDT"

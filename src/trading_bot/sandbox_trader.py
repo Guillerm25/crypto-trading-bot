@@ -18,6 +18,7 @@ class SandboxTrader:
             "enableRateLimit": True,
             "apiKey": settings.bybit_testnet_api_key,
             "secret": settings.bybit_testnet_api_secret,
+            "hostname": settings.bybit_hostname,
         }
         self.exchange = ccxt.bybit(config)
         self.exchange.set_sandbox_mode(True)
