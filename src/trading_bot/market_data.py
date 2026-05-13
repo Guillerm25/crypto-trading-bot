@@ -16,7 +16,7 @@ class MarketDataFetcher:
 
         exchange_config: dict[str, object] = {
             "enableRateLimit": True,
-            "hostname": settings.bybit_hostname,
+            "hostname": "bybit.com",
             "options": {"defaultType": "spot"},
         }
         self.exchange = ccxt.bybit(exchange_config)
