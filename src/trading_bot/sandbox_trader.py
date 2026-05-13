@@ -20,18 +20,34 @@ class SandboxTrader:
             "secret": settings.bybit_testnet_api_secret,
             "hostname": settings.bybit_hostname,
         }
-        options: dict[str, object] = {"defaultType": "spot"}
+        options: dict[str, object] = {}
         if settings.bybit_demo_trading:
             options["enableDemoTrading"] = True
         config["options"] = options
         self.exchange = ccxt.bybit(config)
         if not settings.bybit_demo_trading:
             self.exchange.set_sandbox_mode(True)
+        self.exchange.load_markets()
+
+    def _resolve_symbol(self, symbol: str) -> str:
+        """Resolve a spot symbol to an available market on the exchange.
+
+        Tries spot first (BTC/USDT), then linear perpetual (BTC/USDT:USDT).
+        """
+        if symbol in self.exchange.symbols:
+            return symbol
+        linear = f"{symbol}:{symbol.split('/')[-1]}"
+        if linear in self.exchange.symbols:
+            return linear
+        raise ccxt.BadSymbol(
+            f"{symbol} not available (tried spot and linear)"
+        )
 
     def execute_order(
         self, symbol: str, side: OrderSide, amount: float, price: float
     ) -> Order:
         """Place an order on the Bybit Testnet."""
+        resolved = self._resolve_symbol(symbol)
         order = Order(
             id=str(uuid.uuid4())[:8],
             symbol=symbol,
@@ -43,7 +59,7 @@ class SandboxTrader:
 
         try:
             result = self.exchange.create_order(
-                symbol=symbol,
+                symbol=resolved,
                 type="market",
                 side=side.value,
                 amount=amount,
@@ -74,7 +90,7 @@ class SandboxTrader:
     def fetch_balance(self) -> dict[str, float]:
         """Fetch current testnet account balances across all account types."""
         result: dict[str, float] = {}
-        for account_type in ["spot", "fund"]:
+        for account_type in ["unified", "spot", "fund", "contract"]:
             try:
                 balance = self.exchange.fetch_balance({"type": account_type})
                 for currency, amount in balance.get("total", {}).items():
