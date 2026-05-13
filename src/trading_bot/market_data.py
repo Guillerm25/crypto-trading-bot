@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 import ccxt
 
 from trading_bot.config import Settings
-from trading_bot.models import OHLCV, MarketData, TradingMode
+from trading_bot.models import OHLCV, MarketData
 
 
 class MarketDataFetcher:
@@ -13,7 +13,6 @@ class MarketDataFetcher:
 
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
-        self.is_sandbox = settings.trading_mode == TradingMode.SANDBOX
 
         exchange_config: dict[str, object] = {
             "enableRateLimit": True,
@@ -21,8 +20,6 @@ class MarketDataFetcher:
             "options": {"defaultType": "spot"},
         }
         self.exchange = ccxt.bybit(exchange_config)
-        if self.is_sandbox:
-            self.exchange.set_sandbox_mode(True)
 
     def fetch_ticker(self, symbol: str) -> MarketData:
         """Fetch current ticker data for a symbol."""
