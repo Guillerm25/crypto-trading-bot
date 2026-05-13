@@ -17,13 +17,23 @@ class MarketDataFetcher:
         exchange_config: dict[str, object] = {
             "enableRateLimit": True,
             "hostname": "bybit.com",
-            "options": {"defaultType": "spot"},
         }
         self.exchange = ccxt.bybit(exchange_config)
+        self.exchange.load_markets()
+
+    def _resolve_symbol(self, symbol: str) -> str:
+        """Resolve symbol to an available market. Tries spot then linear."""
+        if symbol in self.exchange.symbols:
+            return symbol
+        linear = f"{symbol}:{symbol.split('/')[-1]}"
+        if linear in self.exchange.symbols:
+            return linear
+        return symbol
 
     def fetch_ticker(self, symbol: str) -> MarketData:
         """Fetch current ticker data for a symbol."""
-        ticker = self.exchange.fetch_ticker(symbol)
+        resolved = self._resolve_symbol(symbol)
+        ticker = self.exchange.fetch_ticker(resolved)
 
         return MarketData(
             symbol=symbol,
@@ -38,7 +48,8 @@ class MarketDataFetcher:
         self, symbol: str, timeframe: str = "1h", limit: int = 48
     ) -> list[OHLCV]:
         """Fetch OHLCV candlestick data."""
-        raw_candles = self.exchange.fetch_ohlcv(symbol, timeframe=timeframe, limit=limit)
+        resolved = self._resolve_symbol(symbol)
+        raw_candles = self.exchange.fetch_ohlcv(resolved, timeframe=timeframe, limit=limit)
 
         candles: list[OHLCV] = []
         for candle in raw_candles:
