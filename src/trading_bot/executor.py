@@ -1,5 +1,6 @@
 """Order execution module - routes orders to paper, sandbox, or live trading."""
 
+import ccxt
 from rich.console import Console
 
 from trading_bot.config import Settings
@@ -107,8 +108,10 @@ class TradeExecutor:
                         f"  [red]SANDBOX BUY {symbol} FAILED: "
                         f"order status {order.status.value}[/red]"
                     )
-            except RuntimeError as exc:
-                console.print(f"  [red]SANDBOX BUY {symbol} ERROR: {exc}[/red]")
+            except (RuntimeError, ccxt.BaseError) as exc:
+                console.print(
+                    f"  [yellow]SANDBOX BUY {symbol} skipped: {exc}[/yellow]"
+                )
                 return None
         else:
             order = self.paper_trader.execute_order(symbol, OrderSide.BUY, amount, price)
@@ -148,8 +151,10 @@ class TradeExecutor:
                         f"  [red]SANDBOX SELL {symbol} FAILED: "
                         f"order status {order.status.value}[/red]"
                     )
-            except RuntimeError as exc:
-                console.print(f"  [red]SANDBOX SELL {symbol} ERROR: {exc}[/red]")
+            except (RuntimeError, ccxt.BaseError) as exc:
+                console.print(
+                    f"  [yellow]SANDBOX SELL {symbol} skipped: {exc}[/yellow]"
+                )
                 return None
         else:
             order = self.paper_trader.execute_order(
