@@ -1,5 +1,6 @@
 @echo off
 title Crypto Trading Bot - Instalacion
+cd /d "%~dp0"
 echo ============================================
 echo   Crypto Trading Bot - Instalacion
 echo ============================================

@@ -1,5 +1,6 @@
 @echo off
 title Crypto Trading Bot
+cd /d "%~dp0"
 chcp 65001 >nul 2>&1
 
 :menu
