@@ -20,6 +20,11 @@ class Settings(BaseSettings):
     # Bybit hostname (use bybit.eu for Europe, bybit.com for global)
     bybit_hostname: str = "bybit.com"
 
+    # Use Bybit Demo Trading instead of Testnet
+    # Demo Trading uses your main account in demo mode (api-demo.bybit.com)
+    # Testnet is a separate system with its own accounts (api-testnet.bybit.com)
+    bybit_demo_trading: bool = False
+
     # Trading
     trading_mode: TradingMode = TradingMode.PAPER
     default_quote_currency: str = "USDT"

@@ -20,8 +20,11 @@ class SandboxTrader:
             "secret": settings.bybit_testnet_api_secret,
             "hostname": settings.bybit_hostname,
         }
+        if settings.bybit_demo_trading:
+            config["options"] = {"enableDemoTrading": True}
         self.exchange = ccxt.bybit(config)
-        self.exchange.set_sandbox_mode(True)
+        if not settings.bybit_demo_trading:
+            self.exchange.set_sandbox_mode(True)
 
     def execute_order(
         self, symbol: str, side: OrderSide, amount: float, price: float

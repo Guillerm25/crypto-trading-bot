@@ -37,36 +37,35 @@ def status() -> None:
         if not settings.bybit_testnet_api_key:
             console.print(
                 "[red]Error: Sandbox mode requires BYBIT_TESTNET_API_KEY "
-                "and BYBIT_TESTNET_API_SECRET.\n"
-                "Create testnet credentials at: "
-                "https://testnet.bybit.com[/red]"
+                "and BYBIT_TESTNET_API_SECRET.[/red]"
             )
             raise SystemExit(1)
         sandbox_trader = SandboxTrader(settings)
+        mode_label = "Demo Trading" if settings.bybit_demo_trading else "Testnet"
         console.print(
-            "[bold magenta]Mode: SANDBOX (Bybit Testnet)[/bold magenta]\n"
+            f"[bold magenta]Mode: SANDBOX (Bybit {mode_label})[/bold magenta]\n"
         )
         ok, msg = sandbox_trader.validate_credentials()
         if not ok:
             console.print(
                 f"[red]Error: {msg}\n\n"
-                "Make sure you created the API keys at https://testnet.bybit.com "
-                "(NOT at www.bybit.com).\n"
-                "Testnet keys and production keys are different.[/red]"
+                "Check your .env config:\n"
+                "- If you created keys from Demo Trading on bybit.eu, "
+                "set BYBIT_DEMO_TRADING=true\n"
+                "- If you created keys from testnet.bybit.com, "
+                "set BYBIT_DEMO_TRADING=false\n"
+                "- Make sure BYBIT_HOSTNAME matches your region "
+                "(bybit.eu for Europe)[/red]"
             )
             raise SystemExit(1)
-        console.print("[bold]Bybit Testnet Balances:[/bold]")
+        console.print(f"[bold]Bybit {mode_label} Balances:[/bold]")
         try:
             balances = sandbox_trader.fetch_balance()
             if balances:
                 for currency, amount in sorted(balances.items()):
                     console.print(f"  {currency}: {amount:,.8f}")
             else:
-                console.print("  [yellow]No funds in testnet account.[/yellow]")
-                console.print(
-                    "  [yellow]Log in at https://testnet.bybit.com to "
-                    "get demo funds.[/yellow]"
-                )
+                console.print("  [yellow]No funds in account.[/yellow]")
         except Exception as exc:
             console.print(f"  [yellow]Could not fetch balances: {exc}[/yellow]")
         console.print()
@@ -158,23 +157,26 @@ def execute(file_path: str | None, auto_execute: bool) -> None:
             if not settings.bybit_testnet_api_key:
                 console.print(
                     "[red]Error: Sandbox mode requires BYBIT_TESTNET_API_KEY "
-                    "and BYBIT_TESTNET_API_SECRET.\n"
-                    "Create testnet credentials at: "
-                    "https://testnet.bybit.com[/red]"
+                    "and BYBIT_TESTNET_API_SECRET.[/red]"
                 )
                 raise SystemExit(1)
             sandbox_trader = SandboxTrader(settings)
+            mode_label = (
+                "Demo Trading" if settings.bybit_demo_trading else "Testnet"
+            )
             console.print(
-                "[bold magenta]Mode: SANDBOX — orders sent to Bybit "
-                "Testnet (demo wallet)[/bold magenta]"
+                f"[bold magenta]Mode: SANDBOX — orders sent to Bybit "
+                f"{mode_label}[/bold magenta]"
             )
             ok, msg = sandbox_trader.validate_credentials()
             if not ok:
                 console.print(
                     f"[red]Error: {msg}\n\n"
-                    "Make sure you created the API keys at "
-                    "https://testnet.bybit.com (NOT at www.bybit.com).\n"
-                    "Testnet keys and production keys are different.[/red]"
+                    "Check your .env config:\n"
+                    "- If you created keys from Demo Trading on bybit.eu, "
+                    "set BYBIT_DEMO_TRADING=true\n"
+                    "- If you created keys from testnet.bybit.com, "
+                    "set BYBIT_DEMO_TRADING=false[/red]"
                 )
                 raise SystemExit(1)
             console.print(
@@ -188,14 +190,17 @@ def execute(file_path: str | None, auto_execute: bool) -> None:
         display_executed_orders(orders)
 
         if settings.trading_mode == TradingMode.SANDBOX and sandbox_trader:
-            console.print("\n[bold]Bybit Testnet Balances:[/bold]")
+            mode_label = (
+                "Demo Trading" if settings.bybit_demo_trading else "Testnet"
+            )
+            console.print(f"\n[bold]Bybit {mode_label} Balances:[/bold]")
             try:
                 balances = sandbox_trader.fetch_balance()
                 if balances:
                     for currency, amount in sorted(balances.items()):
                         console.print(f"  {currency}: {amount:,.8f}")
                 else:
-                    console.print("  [yellow]No funds in testnet account.[/yellow]")
+                    console.print("  [yellow]No funds in account.[/yellow]")
             except Exception as exc:
                 console.print(f"  [yellow]Could not fetch balances: {exc}[/yellow]")
 
