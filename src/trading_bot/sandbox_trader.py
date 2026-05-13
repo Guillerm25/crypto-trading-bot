@@ -20,8 +20,10 @@ class SandboxTrader:
             "secret": settings.bybit_testnet_api_secret,
             "hostname": settings.bybit_hostname,
         }
+        options: dict[str, object] = {"defaultType": "spot"}
         if settings.bybit_demo_trading:
-            config["options"] = {"enableDemoTrading": True}
+            options["enableDemoTrading"] = True
+        config["options"] = options
         self.exchange = ccxt.bybit(config)
         if not settings.bybit_demo_trading:
             self.exchange.set_sandbox_mode(True)
@@ -70,12 +72,17 @@ class SandboxTrader:
             return False, f"Connection error: {exc}"
 
     def fetch_balance(self) -> dict[str, float]:
-        """Fetch current testnet account balances."""
-        balance = self.exchange.fetch_balance()
+        """Fetch current testnet account balances across all account types."""
         result: dict[str, float] = {}
-        for currency, data in balance.get("total", {}).items():
-            if data and float(data) > 0:
-                result[currency] = float(data)
+        for account_type in ["spot", "fund"]:
+            try:
+                balance = self.exchange.fetch_balance({"type": account_type})
+                for currency, amount in balance.get("total", {}).items():
+                    if amount and float(amount) > 0:
+                        val = float(amount)
+                        result[currency] = result.get(currency, 0) + val
+            except Exception:
+                pass
         return result
 
     def fetch_open_orders(self, symbol: str | None = None) -> list[dict[str, object]]:
