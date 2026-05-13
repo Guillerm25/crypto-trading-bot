@@ -90,14 +90,26 @@ class TradeExecutor:
         amount = budget / price
 
         if self.settings.trading_mode == TradingMode.SANDBOX and self.sandbox_trader:
-            order = self.sandbox_trader.execute_order(
-                symbol, OrderSide.BUY, amount, price
-            )
-            self.paper_trader.execute_order(symbol, OrderSide.BUY, amount, price)
-            console.print(
-                f"  [green]SANDBOX BUY {symbol}: {amount:.6f} @ ${price:,.2f} "
-                f"(${budget:,.2f})[/green]"
-            )
+            try:
+                order = self.sandbox_trader.execute_order(
+                    symbol, OrderSide.BUY, amount, price
+                )
+                if order.status.value == "filled":
+                    self.paper_trader.execute_order(
+                        symbol, OrderSide.BUY, amount, price
+                    )
+                    console.print(
+                        f"  [green]SANDBOX BUY {symbol}: {amount:.6f} "
+                        f"@ ${price:,.2f} (${budget:,.2f})[/green]"
+                    )
+                else:
+                    console.print(
+                        f"  [red]SANDBOX BUY {symbol} FAILED: "
+                        f"order status {order.status.value}[/red]"
+                    )
+            except RuntimeError as exc:
+                console.print(f"  [red]SANDBOX BUY {symbol} ERROR: {exc}[/red]")
+                return None
         else:
             order = self.paper_trader.execute_order(symbol, OrderSide.BUY, amount, price)
             console.print(
@@ -123,12 +135,22 @@ class TradeExecutor:
         price = ticker.current_price
 
         if self.settings.trading_mode == TradingMode.SANDBOX and self.sandbox_trader:
-            order = self.sandbox_trader.execute_order(
-                symbol, OrderSide.SELL, sell_amount, price
-            )
-            self.paper_trader.execute_order(
-                symbol, OrderSide.SELL, sell_amount, price
-            )
+            try:
+                order = self.sandbox_trader.execute_order(
+                    symbol, OrderSide.SELL, sell_amount, price
+                )
+                if order.status.value == "filled":
+                    self.paper_trader.execute_order(
+                        symbol, OrderSide.SELL, sell_amount, price
+                    )
+                else:
+                    console.print(
+                        f"  [red]SANDBOX SELL {symbol} FAILED: "
+                        f"order status {order.status.value}[/red]"
+                    )
+            except RuntimeError as exc:
+                console.print(f"  [red]SANDBOX SELL {symbol} ERROR: {exc}[/red]")
+                return None
         else:
             order = self.paper_trader.execute_order(
                 symbol, OrderSide.SELL, sell_amount, price
